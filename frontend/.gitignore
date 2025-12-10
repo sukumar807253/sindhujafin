@@ -1,0 +1,71 @@
+# ========================
+# ENV & SECRETS
+# ========================
+.env
+.env.*
+!.env.example
+
+# ========================
+# NODE CORE
+# ========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ========================
+# BUILD / OUTPUT
+# ========================
+dist/
+build/
+.tmp/
+temp/
+uploads/
+coverage/
+
+# ========================
+# OS JUNK
+# ========================
+.DS_Store
+Thumbs.db
+
+# ========================
+# LOGS
+# ========================
+*.log
+logs/
+debug.log
+
+# ========================
+# IDE / EDITOR
+# ========================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ========================
+# CACHE
+# ========================
+.cache/
+.parcel-cache/
+.eslintcache
+
+# ========================
+# OPTIONAL BACKEND STUFF
+# ========================
+# Ignore uploaded images if stored locally
+public/uploads/
+uploads/
+
+# Ignore Prisma / migrations temporary stuff
+.prisma/
+
+# Lock dotenv-expand cache (if used)
+.env.prod.local
+.vercel
+.env*.local
