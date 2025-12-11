@@ -16,7 +16,13 @@ const { createClient } = require('@supabase/supabase-js');
 const app = express();
 
 // ---- Middleware ----
-app.use(cors({ origin: 'http://localhost:8082' })); // frontend URL
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+  })
+); // frontend URL
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // optional local folder

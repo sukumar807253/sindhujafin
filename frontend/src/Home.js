@@ -831,7 +831,7 @@ export default function LoanApplicationFlow() {
                         position: "relative",
                         width: "100%",      // full width
                         height: "400px",    // increase this (300, 400, 500…)
-                        background: "#6e6e6eff"
+                        background: "#696262ff"
                       }}
                     >
                       <Cropper
