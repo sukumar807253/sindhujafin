@@ -84,26 +84,26 @@ export default function LoanApplicationFlow() {
   const [currentFileName, setCurrentFileName] = useState("");
 
   // FETCH CENTERS
- const fetchCenters = useCallback(async () => {
-  try {
-    const { data } = await axios.get("http://localhost:8081/centers");
-    const deletedCenters = JSON.parse(localStorage.getItem("deletedCenters") || "[]");
+  const fetchCenters = useCallback(async () => {
+    try {
+      const { data } = await axios.get("http://localhost:8081/centers");
+      const deletedCenters = JSON.parse(localStorage.getItem("deletedCenters") || "[]");
 
-    const mapped = Array.isArray(data)
-      ? data
+      const mapped = Array.isArray(data)
+        ? data
           .map((c) => ({
             id: c.id ?? c.center_id ?? c.centerId,
             name: c.name ?? c.centerName ?? c.center_name,
           }))
           .filter((c) => !deletedCenters.includes(c.id))
-      : [];
+        : [];
 
-    setCenters(mapped);
-  } catch (err) {
-    console.error("Error fetching centers:", err);
-    alert("Error fetching centers");
-  }
-}, []);
+      setCenters(mapped);
+    } catch (err) {
+      console.error("Error fetching centers:", err);
+      alert("Error fetching centers");
+    }
+  }, []);
 
 
 
@@ -140,52 +140,52 @@ export default function LoanApplicationFlow() {
   }, [selectedCenter]);
 
 
-  
+
 
   // ADD CENTER
- const addCenter = async () => {
-  if (!centerName.trim()) {
-    alert("Enter Center Name");
-    return;
-  }
+  const addCenter = async () => {
+    if (!centerName.trim()) {
+      alert("Enter Center Name");
+      return;
+    }
 
-  // Format: First letter uppercase, rest same
-  const formattedName =
-    centerName.trim().charAt(0).toUpperCase() + centerName.trim().slice(1);
+    // Format: First letter uppercase, rest same
+    const formattedName =
+      centerName.trim().charAt(0).toUpperCase() + centerName.trim().slice(1);
 
-  // Duplicate check (case-insensitive)
-  const safeName = formattedName.toLowerCase();
-  const nameExists = centers.some(
-    (c) => (c?.name || "").toLowerCase().trim() === safeName
-  );
+    // Duplicate check (case-insensitive)
+    const safeName = formattedName.toLowerCase();
+    const nameExists = centers.some(
+      (c) => (c?.name || "").toLowerCase().trim() === safeName
+    );
 
-  if (nameExists) {
-    alert("Center already exists");
-    return;
-  }
+    if (nameExists) {
+      alert("Center already exists");
+      return;
+    }
 
-  try {
-    // Send to backend
-    const res = await axios.post("http://localhost:8081/centers", {
-      name: formattedName,
-    });
+    try {
+      // Send to backend
+      const res = await axios.post("http://localhost:8081/centers", {
+        name: formattedName,
+      });
 
-    // Map backend response (your own mapping)
-    const newCenter = {
-      id: res.data.id ?? res.data.center_id ?? res.data.centerId,
-      name: res.data.name ?? res.data.centerName ?? res.data.center_name,
-    };
+      // Map backend response (your own mapping)
+      const newCenter = {
+        id: res.data.id ?? res.data.center_id ?? res.data.centerId,
+        name: res.data.name ?? res.data.centerName ?? res.data.center_name,
+      };
 
-    // Show immediately in UI
-    setCenters((prev) => [...prev, newCenter]);
+      // Show immediately in UI
+      setCenters((prev) => [...prev, newCenter]);
 
-    // Clear input
-    setCenterName("");
-  } catch (err) {
-    console.error("Error adding center:", err);
-    alert("Failed to add center");
-  }
-};
+      // Clear input
+      setCenterName("");
+    } catch (err) {
+      console.error("Error adding center:", err);
+      alert("Failed to add center");
+    }
+  };
 
   // ADD MEMBER
   const addMember = async () => {
@@ -283,66 +283,79 @@ export default function LoanApplicationFlow() {
   const handleLoanSubmit = async () => {
     try {
       if (!selectedMember) return alert("Select member first");
+      if (!selectedCenter) return alert("Select center first");
 
-      // Example required fields
+      // Required fields (add/remove based on your backend validation)
       const requiredFields = [
         "memberCibil",
         "personName",
         "dateofbirth",
         "gender",
         "religion",
-        // "maritalStatus",
-        // "aadharNo",
-        // " memberwork",
-        // "annualIncome",
-        // " nomineeName",
-        // "nomineeDob",
-        // "nomineeRelationship",
-        // "nomineeGender",
-        // "nomineeReligion",
-        // "nomineeMaritalStatus",
-        // "nomineeBusiness",
-        // "mobileNo",
-        // " nomineeMobile",
-        // "address",
-        // "pincode",
-        // "memberAadhaarFront",
-        // " memberAadhaarBack",
-        // "nomineeAadhaarFront",
-        // "nomineeAadhaarBack",
-        // "panCard",
-        // "formImage",
-        // "signature",
-        // "memberPhoto",
-        // "passbookImage",
+        "maritalStatus",
+        "aadharNo",
+        "memberwork",
+        "annualIncome",
+        "nomineeName",
+        "nomineeDob",
+        "nomineeRelationship",
+        "nomineeGender",
+        "nomineeReligion",
+        "nomineeMaritalStatus",
+        "nomineeBusiness",
+        "mobileNo",
+        "nomineeMobile",
+        "address",
+        "pincode",
+        "memberAadhaarFront",
+        "memberAadhaarBack",
+        "nomineeAadhaarFront",
+        "nomineeAadhaarBack",
+        "panCard",
+        "formImage",
+        "signature",
+        "memberPhoto",
+        "passbookImage",
       ];
 
+      // Validate required fields
       for (let field of requiredFields) {
         if (!loanForm[field] || loanForm[field].toString().trim() === "") {
           return alert(`Please fill ${field}`);
         }
       }
 
+      // Create FormData
       const FD = new FormData();
-      Object.entries(loanForm).forEach(([k, v]) => {
-        if (v !== null && v !== "") FD.append(k, v);
+      Object.entries(loanForm).forEach(([key, value]) => {
+        if (value !== null && value !== "") {
+          FD.append(key, value);
+        }
       });
+
       FD.append("memberId", selectedMember);
       FD.append("centerId", selectedCenter);
 
-      await API.post("/loans", FD, { headers: { "Content-Type": "multipart/form-data" } });
+      // Submit via API
+      await API.post("/loans", FD, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       alert("Loan Submitted Successfully ✔");
 
+      // Reset form & steps
       setLoanForm(initialLoanForm);
       setLoanStep(1);
       setStep(1);
       setSelectedCenter(null);
       setSelectedMember(null);
-    } catch {
+
+    } catch (err) {
+      console.error("Loan submit error:", err);
       alert("Error submitting loan");
     }
   };
+
 
 
   const styles = {
@@ -813,20 +826,28 @@ export default function LoanApplicationFlow() {
                       flexDirection: "column",
                     }}
                   >
-                    <div style={{ flex: 1, position: "relative" }}>
+                    <div
+                      style={{
+                        position: "relative",
+                        width: "100%",      // full width
+                        height: "400px",    // increase this (300, 400, 500…)
+                        background: "#6e6e6eff"
+                      }}
+                    >
                       <Cropper
                         image={cropImageSrc}
                         crop={crop}
                         zoom={zoom}
                         rotation={rotation}
-                        aspect={1}        // 1:1 crop
+                        aspect={1}
                         onCropChange={setCrop}
                         onZoomChange={setZoom}
                         onRotationChange={setRotation}
                         onCropComplete={onCropComplete}
-                        showGrid={true}   // optional: show grid lines
+                        showGrid={true}
                       />
                     </div>
+
 
                     {/* Zoom Slider */}
                     <input

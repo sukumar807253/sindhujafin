@@ -1,19 +1,27 @@
 // server.js
-// MySQL + Supabase (uploads in memory -> supabase.storage) + signed url endpoints
-// Required env: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_BUCKET, DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT, PORT(optional)
+// MySQL + Supabase (uploads in memory -> supabase.storage) + signed URL endpoints
 
-const express = require("express");
-const mysql = require("mysql");
-const cors = require("cors");
-const multer = require("multer");
-const path = require("path");
-const bcrypt = require("bcrypt");
-const util = require("util");
-require("dotenv").config();
+const express = require('express');
+const cors = require('cors');
+const mysql = require('mysql');
+const multer = require('multer');
+const path = require('path');
+const bcrypt = require('bcrypt');
+const util = require('util');
+require('dotenv').config();
 
-const { createClient } = require("@supabase/supabase-js");
+const { createClient } = require('@supabase/supabase-js');
 
-// ---- Validate env ----
+// ---- App init ----
+const app = express();
+
+// ---- Middleware ----
+app.use(cors({ origin: 'http://localhost:8082' })); // frontend URL
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // optional local folder
+
+// ---- Supabase setup ----
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const SUPABASE_BUCKET = process.env.SUPABASE_BUCKET;
@@ -25,19 +33,10 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !SUPABASE_BUCKET) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-// ---- App init ----
-const app = express();
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// optional: serve a local uploads folder for local-only files (not used for supabase)
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// ---- Multer memory storage (we upload directly to Supabase) ----
+// ---- Multer in-memory storage ----
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 25 * 1024 * 1024 } // 25 MB max
+  limits: { fileSize: 25 * 1024 * 1024 } // 25MB max
 });
 
 // ---- MySQL pool ----
@@ -49,21 +48,20 @@ const db = mysql.createPool({
   database: process.env.DB_NAME || "mfi",
   port: process.env.DB_PORT || 3306,
 });
+
 const query = util.promisify(db.query).bind(db);
 
 db.getConnection((err, conn) => {
-  if (err) {
-    console.error("❌ MySQL connection failed:", err);
-  } else {
+  if (err) console.error("❌ MySQL connection failed:", err);
+  else {
     console.log("✅ MySQL connected");
     conn.release();
   }
 });
 
-// ---- Auto-create tables (loans + simple users/centers/members) ----
+// ---- Auto-create tables ----
 const createTables = async () => {
   const stmts = [
-    // users (simple)
     `CREATE TABLE IF NOT EXISTS users (
       id INT AUTO_INCREMENT PRIMARY KEY,
       name VARCHAR(255),
@@ -71,13 +69,11 @@ const createTables = async () => {
       password VARCHAR(255),
       createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`,
-    // centers
     `CREATE TABLE IF NOT EXISTS centers (
       id INT AUTO_INCREMENT PRIMARY KEY,
       name VARCHAR(255),
       createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`,
-    // members
     `CREATE TABLE IF NOT EXISTS members (
       id INT AUTO_INCREMENT PRIMARY KEY,
       name VARCHAR(255),
@@ -85,7 +81,6 @@ const createTables = async () => {
       createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (center_id) REFERENCES centers(id) ON DELETE SET NULL
     )`,
-    // loans table
     `CREATE TABLE IF NOT EXISTS loans (
       id INT AUTO_INCREMENT PRIMARY KEY,
       loanId VARCHAR(80) UNIQUE,
@@ -129,11 +124,8 @@ const createTables = async () => {
   ];
 
   for (const s of stmts) {
-    try {
-      await query(s);
-    } catch (e) {
-      console.error("Table creation error:", e);
-    }
+    try { await query(s); } 
+    catch (e) { console.error("Table creation error:", e); }
   }
 };
 
@@ -149,11 +141,8 @@ async function uploadToSupabase(buffer, originalName, folder) {
   const filePath = `${folder}/${fileName}`;
 
   const { error } = await supabase.storage.from(SUPABASE_BUCKET).upload(filePath, buffer, { upsert: true });
-
-  if (error) {
-    throw new Error(`Supabase upload failed: ${JSON.stringify(error)}`);
-  }
-  return filePath; // store this path in DB
+  if (error) throw new Error(`Supabase upload failed: ${JSON.stringify(error)}`);
+  return filePath;
 }
 
 function getContentTypeForPath(p) {
@@ -614,7 +603,7 @@ app.put("/loan/status/:id", async (req, res) => {
     handleServerError(res, err);
   }
 });
-
+app.get('/', (req, res) => res.send('Backend is working!'));
 
 // ---- Start server ----
 const PORT = process.env.PORT || 8081;
