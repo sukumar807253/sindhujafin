@@ -185,15 +185,15 @@ export default function LoanPage() {
 
       {/* Detail Popup */}
       {detailLoan && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center",  alignItems: "flex-start", overflowY: "auto", padding: "20px 10px", zIndex: 9999 ,}}>
-          <div style={{ background: "#fff", padding: 20, width: "90%", maxWidth: 1500, borderRadius: 8 , }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "flex-start", overflowY: "auto", padding: "20px 10px", zIndex: 9999, }}>
+          <div style={{ background: "#fff", padding: 20, width: "90%", maxWidth: 1500, borderRadius: 8, }}>
             <h1 style={{ textAlign: "center", fontSize: 36, margin: "0 0 20px", padding: 10, borderBottom: "3px solid #1976d2" }}>
               {formatLoanId(detailLoan)}
             </h1>
 
             <div style={{ display: "flex", flexWrap: "wrap", gap: 30, padding: 30 }}>
               {/* Personal */}
-              <div style={{ flex: 1, minWidth: 250}}>
+              <div style={{ flex: 1, minWidth: 250 }}>
                 <h4 style={sectionTitle}>Personal Details</h4>
                 <p><strong>Name:</strong> {detailLoan.personName}</p>
                 <p><strong>Member CIBIL:</strong> {detailLoan.memberCibil}</p>
@@ -213,36 +213,44 @@ export default function LoanPage() {
                 <p><strong>Gender:</strong> {detailLoan.nomineeGender}</p>
                 <p><strong>Religion:</strong> {detailLoan.nomineeReligion}</p>
                 <p><strong>Marital Status:</strong> {detailLoan.nomineeMaritalStatus}</p>
-              <div style={{ flex: 1, minWidth: 250 }}>
-                <h4 style={sectionTitle}>Income Details</h4>
-                <p><strong>Member Work / Business:</strong> {detailLoan.memberwork}</p>
-                <p><strong>AnnualIncome:</strong> {detailLoan.annualIncome}</p>
-                <p><strong>Nominee Work / Business:</strong> {detailLoan.nomineeBusiness}</p>
-              </div>
+                <div style={{ flex: 1, minWidth: 250 }}>
+                  <h4 style={sectionTitle}>Income Details</h4>
+                  <p><strong>Member Work / Business:</strong> {detailLoan.memberwork}</p>
+                  <p><strong>AnnualIncome:</strong> {detailLoan.annualIncome}</p>
+                  <p><strong>Nominee Work / Business:</strong> {detailLoan.nomineeBusiness}</p>
+                </div>
               </div>
 
 
               {/* Loan Info */}
-              <div style={{ flex: 1, minWidth: 250}}>
-                 <h4 style={sectionTitle}>Contect Detiles</h4>
-                 <p><strong>Contact:</strong> {detailLoan.mobileNo }</p>
-                 <p><strong>Nominee Contact:</strong> {detailLoan.nomineeMobile}</p>
-                 <p><strong>MemberEmail:</strong> {detailLoan.memberEmail }</p>
-                 <p><strong>Address:</strong> {detailLoan.address}</p>
-                 <p><strong>Pincode:</strong> {detailLoan.pincode}</p>
-                
-                 <div style={{ flex: 1, minWidth: 250}}>
-                   <h4 style={sectionTitle}>Status</h4>
-                   <p><strong>Status:</strong> {detailLoan.status}</p>
-                   <p><strong>Submitted At:</strong> {detailLoan.submittedAt ? new Date(detailLoan.submittedAt).toLocaleString("en-IN") : "-"}</p>
+              <div style={{ flex: 1, minWidth: 250 }}>
+                <h4 style={sectionTitle}>Contect Detiles</h4>
+                <p><strong>Contact:</strong> {detailLoan.mobileNo}</p>
+                <p><strong>Nominee Contact:</strong> {detailLoan.nomineeMobile}</p>
+                <p><strong>MemberEmail:</strong> {detailLoan.memberEmail}</p>
+                <p><strong>Address:</strong> {detailLoan.address}</p>
+                <p><strong>Pincode:</strong> {detailLoan.pincode}</p>
 
-                  </div>
+                <div style={{ flex: 1, minWidth: 250 }}>
+                  <h4 style={sectionTitle}>Status</h4>
+                  <p><strong>Status:</strong> {detailLoan.status}</p>
+                  <p><strong>Submitted At:</strong> {detailLoan.submittedAt ? new Date(detailLoan.submittedAt).toLocaleString("en-IN") : "-"}</p>
+
+                </div>
               </div>
             </div>
 
             {/* Documents */}
             <h4 style={{ marginTop: 20 }}>Uploaded Documents</h4>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, padding: 10 }}>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: 12,
+                padding: 10,
+              }}
+            >
               {[
                 { key: "memberAadhaarFront", label: "Member Aadhaar Front" },
                 { key: "memberAadhaarBack", label: "Member Aadhaar Back" },
@@ -255,19 +263,59 @@ export default function LoanPage() {
                 { key: "passbookImage", label: "Passbook Image" },
                 { key: "proof", label: "Proof Document" },
               ].map((f) => {
-                const file = detailLoan[f.key];
-                if (!file) return null;
+                const filePath = detailLoan[f.key]; // 🟢 DB PATH
+                if (!filePath) return null;
+
                 return (
-                  <div key={f.key} style={{ background: "#f8f8f8", padding: 10, borderRadius: 6, boxShadow: "0 0 4px rgba(0,0,0,0.1)" }}>
+                  <div
+                    key={f.key}
+                    style={{
+                      background: "#f8f8f8",
+                      padding: 12,
+                      borderRadius: 6,
+                      textAlign: "center",
+                      boxShadow: "0 0 4px rgba(0,0,0,0.1)",
+                    }}
+                  >
                     <strong>{f.label}</strong>
                     <br />
-                    <a href={`http://localhost:8081/uploads/${file}`} target="_blank" rel="noreferrer" style={{ color: "#1976d2", wordBreak: "break-word", display: "inline-block", marginTop: 5 }}>
-                      {file}
-                    </a>
+
+                    <button
+                      onClick={async () => {
+                        try {
+                          // 🔥 Get signed URL for the exact file
+                          const res = await fetch(
+                            `http://localhost:8081/get-signed-url/${encodeURIComponent(filePath)}`
+                          );
+                          const data = await res.json();
+
+                          if (data.success) {
+                            window.open(data.url, "_blank"); // open exact document
+                          } else {
+                            alert("Cannot load document");
+                          }
+                        } catch (err) {
+                          alert("Error fetching document");
+                        }
+                      }}
+                      style={{
+                        marginTop: 10,
+                        padding: "8px 12px",
+                        background: "#1976d2",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 6,
+                        cursor: "pointer",
+                      }}
+                    >
+                      View Document
+                    </button>
                   </div>
                 );
               })}
             </div>
+
+
 
             {/* Action Buttons */}
             <div style={{ display: "flex", justifyContent: "center", gap: 10, marginTop: 20 }}>
@@ -297,7 +345,7 @@ const sectionTitle = {
   border: "2px solid #1976d2",
   backgroundColor: "#2196f3",
   color: "#fff",
-  padding: 5 ,
+  padding: 5,
   borderRadius: 6,
   marginBottom: 5,
 

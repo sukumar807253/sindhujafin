@@ -7,9 +7,6 @@ import CrudPage from './CrudPage';
 import LoanPage from "./LoanPage";
 
 
-
-
-
 function App() {
   return (
     <BrowserRouter>
@@ -18,7 +15,11 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/Home" element={<Home />} />
         <Route path="/crud" element={<CrudPage />} />  
+
+        {/* Single Loan View */}
         <Route path="/loan/:id" element={<LoanPage />} />
+
+
       </Routes>
     </BrowserRouter>
   );

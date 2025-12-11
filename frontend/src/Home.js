@@ -139,14 +139,22 @@ export default function LoanApplicationFlow() {
     if (selectedCenter) fetchMembers(selectedCenter);
   }, [selectedCenter]);
 
+
+  
+
   // ADD CENTER
-  const addCenter = async () => {
+ const addCenter = async () => {
   if (!centerName.trim()) {
     alert("Enter Center Name");
     return;
   }
 
-  const safeName = centerName.trim().toLowerCase();
+  // Format: First letter uppercase, rest same
+  const formattedName =
+    centerName.trim().charAt(0).toUpperCase() + centerName.trim().slice(1);
+
+  // Duplicate check (case-insensitive)
+  const safeName = formattedName.toLowerCase();
   const nameExists = centers.some(
     (c) => (c?.name || "").toLowerCase().trim() === safeName
   );
@@ -157,18 +165,18 @@ export default function LoanApplicationFlow() {
   }
 
   try {
-    // Add to backend
+    // Send to backend
     const res = await axios.post("http://localhost:8081/centers", {
-      name: centerName.trim(),
+      name: formattedName,
     });
 
-    // Map response properly
+    // Map backend response (your own mapping)
     const newCenter = {
       id: res.data.id ?? res.data.center_id ?? res.data.centerId,
       name: res.data.name ?? res.data.centerName ?? res.data.center_name,
     };
 
-    // Update state immediately
+    // Show immediately in UI
     setCenters((prev) => [...prev, newCenter]);
 
     // Clear input
